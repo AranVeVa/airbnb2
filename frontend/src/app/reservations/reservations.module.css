@@ -1,0 +1,223 @@
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 2rem;
+    text-align: center;
+    letter-spacing: -0.5px;
+    border-bottom: 4px solid #f43f5e;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.item {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-color: #f43f5e;
+}
+
+.itemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.itemTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.itemPrice {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #f43f5e;
+    margin: 0;
+}
+
+.itemInfo {
+    color: #4b5563;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.itemInfo p {
+    margin: 0.25rem 0;
+}
+
+.status {
+    display: inline-block;
+    padding: 0.35rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.confirmed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.cancelled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.empty {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f9fafb;
+    border-radius: 1rem;
+    color: #6b7280;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.backLink {
+    display: inline-block;
+    color: #f43f5e;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #f43f5e;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+}
+
+.backLink:hover {
+    background-color: #f43f5e;
+    color: white;
+}
+
+.actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.editBtn,
+.cancelBtn,
+.saveBtn,
+.cancelEditBtn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+}
+
+.editBtn {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.editBtn:hover {
+    background-color: #e5e7eb;
+}
+
+.cancelBtn {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.cancelBtn:hover {
+    background-color: #fecaca;
+}
+
+.editForm {
+    background-color: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+
+.editTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+.editRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.editRow label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.editRow input {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+}
+
+.editActions {
+    display: flex;
+    gap: 1rem;
+}
+
+.saveBtn {
+    background-color: #f43f5e;
+    color: white;
+}
+
+.saveBtn:hover {
+    background-color: #e11d48;
+}
+
+.cancelEditBtn {
+    background-color: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.cancelEditBtn:hover {
+    background-color: #f3f4f6;
+}
