@@ -131,6 +131,19 @@ const propertyController = {
             return res.status(500).json({ error: 'Error al eliminar la propiedad.' });
         }
     },
+    async updateRating(req, res) {
+        try {
+            const { rating } = req.body;
+            const property = await Property.findByPk(req.params.id);
+            if (!property) return res.status(404).json({ error: 'Propiedad no encontrada' });
+
+            // Promediar o reemplazar (simple):
+            await property.update({ rating });
+            res.json({ message: 'Calificación actualizada', property });
+        } catch (error) {
+            res.status(500).json({ error: 'Error al actualizar calificación' });
+        }
+    }
 };
 
 module.exports = propertyController;

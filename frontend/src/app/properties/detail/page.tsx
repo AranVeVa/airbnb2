@@ -4,15 +4,19 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { showAlert } from '@/lib/alerts';
+import { getImageUrl } from '@/lib/image'; // <-- IMPORTAMOS EL HELPER
 import styles from './propertyDetail.module.css';
 
-// 1. CORRECCIÓN DE LA INTERFAZ
 interface Property {
     id: string | number;
     title: string;
     description: string;
-    pricePerNight: number; // <--- Cambiado de 'price'
-    images: string[];      // <--- Cambiado de 'imageUrl'
+    pricePerNight: number; 
+    images: string[];
+    rating: number;        // <-- Agregamos rating
+    maxGuests: number;     // <-- Agregamos maxGuests
+    location: string;      // <-- Agregamos location
+    category: string;      // <-- Agregamos category
 }
 
 function DetailContent() {
@@ -21,13 +25,17 @@ function DetailContent() {
     const [property, setProperty] = useState<Property | null>(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [activeImg, setActiveImg] = useState(0); // <-- Estado para la galería
     const { token } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
         if (!id) return;
         apiFetch<Property>(`/properties/${id}`)
-            .then(setProperty)
+            .then(data => {
+                setProperty(data);
+                setActiveImg(0); // Reiniciar imagen al cargar
+            })
             .catch(() => showAlert('Error', 'No se pudo cargar la propiedad', 'error'));
     }, [id]);
 
@@ -36,7 +44,6 @@ function DetailContent() {
         if (!token) return showAlert('Atención', 'Debes iniciar sesión para reservar', 'warning');
         if (!property) return;
 
-        // 2. CALCULAR DÍAS Y PRECIO TOTAL (Obligatorio para el backend)
         const start = new Date(startDate);
         const end = new Date(endDate);
         const diffTime = end.getTime() - start.getTime();
@@ -52,7 +59,6 @@ function DetailContent() {
             await apiFetch('/reservations', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
-                // 3. ENVIAMOS EL totalPrice EN EL BODY
                 body: JSON.stringify({ 
                     propertyId: id, 
                     startDate, 
@@ -74,14 +80,36 @@ function DetailContent() {
         <div className={styles.container}>
             <div className={styles.grid}>
                 <div>
-                    {/* 4. TOMAR LA PRIMERA IMAGEN DEL ARRAY */}
-                    <img 
-                        src={property.images && property.images.length > 0 ? property.images[0] : 'https://via.placeholder.com/600x350'} 
-                        alt={property.title} 
-                        className={styles.image} 
-                    />
+                    {/* GALERÍA DE IMÁGENES */}
+                    <div className={styles.gallery}>
+                        <img 
+                            src={getImageUrl(property.images?.[activeImg])} 
+                            alt={property.title} 
+                            className={styles.mainImage} 
+                        />
+                        {property.images && property.images.length > 1 && (
+                            <div className={styles.thumbnails}>
+                                {property.images.map((img, index) => (
+                                    <img 
+                                        key={index}
+                                        src={getImageUrl(img)}
+                                        alt={`Imagen ${index+1}`}
+                                        className={`${styles.thumb} ${index === activeImg ? styles.activeThumb : ''}`}
+                                        onClick={() => setActiveImg(index)}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     <h1 className={styles.title}>{property.title}</h1>
-                    {/* 5. USAR pricePerNight */}
+                    
+                    {/* INFORMACIÓN EXTRA (Rating, Ubicación, Huéspedes) */}
+                    <div className={styles.metaInfo}>
+                        <p className={styles.rating}>⭐ {property.rating} / 5</p>
+                        <p className={styles.metaText}>{property.category} · {property.location} · Hasta {property.maxGuests} huéspedes</p>
+                    </div>
+
                     <p className={styles.price}>${property.pricePerNight} / noche</p>
                     <p className={styles.description}>{property.description}</p>
                 </div>
