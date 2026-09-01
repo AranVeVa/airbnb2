@@ -6,6 +6,16 @@ import { apiFetch } from '@/lib/api';
 import { showAlert } from '@/lib/alerts';
 import styles from './propertyForm.module.css';
 
+// Función para limitar el valor entre min y max
+const clampValue = (value: string, min: number, max: number) => {
+    if (value === '') return '';
+    const num = parseFloat(value);
+    if (isNaN(num)) return '';
+    if (num < min) return min.toString();
+    if (num > max) return max.toString();
+    return value;
+};
+
 export default function NewPropertyPage() {
     const { token } = useAuth();
     const router = useRouter();
@@ -18,14 +28,11 @@ export default function NewPropertyPage() {
     const [maxGuests, setMaxGuests] = useState('');
     const [images, setImages] = useState<string[]>(['']);
 
-    const addImageInput = () => {
-        setImages([...images, '']);
-    };
+    const addImageInput = () => setImages([...images, '']);
     const removeImageInput = (index: number) => {
         const newImages = images.filter((_, i) => i !== index);
         setImages(newImages);
     };
-
     const handleImageChange = (index: number, value: string) => {
         const newImages = [...images];
         newImages[index] = value;
@@ -34,12 +41,28 @@ export default function NewPropertyPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!token) {
             showAlert('Atención', 'Debes iniciar sesión para publicar', 'warning');
             return;
         }
 
+        // Validaciones después de enviar
+        if (!title || !location || !description) {
+            showAlert('Error', 'Todos los campos obligatorios deben estar llenos', 'error');
+            return;
+        }
+
+        if (parseInt(maxGuests) < 1) {
+            showAlert('Error', 'El número de huéspedes debe ser al menos 1', 'error');
+            return;
+        }
+
+        if (parseFloat(pricePerNight) <= 0) {
+            showAlert('Error', 'El precio debe ser mayor a 0', 'error');
+            return;
+        }
+
+        // Limpiar URLs vacías
         const imagesArray = images.map(img => img.trim()).filter(img => img !== '');
 
         try {
@@ -116,25 +139,49 @@ export default function NewPropertyPage() {
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>Precio por noche (MXN)</label>
                         <input
-                            type="number" required min="1" step="0.01"
+                            type="number"
+                            min="1"
+                            max="100000"
+                            step="0.01"
                             className={styles.input}
                             value={pricePerNight}
-                            onChange={(e) => setPricePerNight(e.target.value)}
+                            onChange={(e) => setPricePerNight(clampValue(e.target.value, 1, 100000))}
+                            onKeyDown={(e) => {
+                                if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                if (e.key === 'ArrowDown' && (pricePerNight === '' || parseFloat(pricePerNight) <= 1)) {
+                                    e.preventDefault();
+                                }
+                                if (e.key === 'ArrowUp' && parseFloat(pricePerNight) >= 100000) {
+                                    e.preventDefault();
+                                }
+                            }}
                             placeholder="1500.00"
                         />
                     </div>
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>Máximo de huéspedes</label>
                         <input
-                            type="number" required min="1"
+                            type="number"
+                            min="1"
+                            max="50"
                             className={styles.input}
                             value={maxGuests}
-                            onChange={(e) => setMaxGuests(e.target.value)}
+                            onChange={(e) => setMaxGuests(clampValue(e.target.value, 1, 50))}
+                            onKeyDown={(e) => {
+                                if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                if (e.key === 'ArrowDown' && (maxGuests === '' || parseFloat(maxGuests) <= 1)) {
+                                    e.preventDefault();
+                                }
+                                if (e.key === 'ArrowUp' && parseFloat(maxGuests) >= 50) {
+                                    e.preventDefault();
+                                }
+                            }}
                             placeholder="4"
                         />
                     </div>
                 </div>
 
+                {/* Imágenes dinámicas */}
                 <div className={styles.inputGroup}>
                     <label className={styles.label}>URLs de imágenes (agrega varias)</label>
                     {images.map((img, index) => (

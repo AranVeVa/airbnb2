@@ -16,15 +16,15 @@ export default function LoginPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await apiFetch<{ token: string }>('/auth/login', {
+            const res = await apiFetch<{ token: string, user: { role: string } }>('/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ email, password }),
             });
-            login(res.token);
+            login(res.token, res.user.role);
             showAlert('¡Bienvenido!', 'Sesión iniciada correctamente', 'success');
             router.push('/');
         } catch (error: any) {
-            showAlert('Error', error.message || 'Credenciales incorrectas', 'error');
+            showAlert('Error', error.message || 'Usuario o contraseña incorrectos.', 'error');
         }
     };
 
