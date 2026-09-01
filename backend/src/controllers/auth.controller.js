@@ -106,6 +106,17 @@ const authController = {
       return res.status(500).json({ error: 'Error al obtener perfil.' });
     }
   },
+
+  async becomeHost(req, res) {
+    try {
+      const user = await User.findByPk(req.user.id);
+      if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+      await user.update({ role: 'admin' });
+      return res.json({ message: 'Ahora eres propietario', role: 'admin' });
+    } catch (error) {
+      return res.status(500).json({ error: 'Error al actualizar rol' });
+    }
+  }
 };
 
 module.exports = authController;
