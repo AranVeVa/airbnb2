@@ -11,7 +11,7 @@ interface Property {
     id: string | number;
     title: string;
     description: string;
-    pricePerNight: number; 
+    pricePerNight: number;
     images: string[];
     rating: number;        // <-- Agregamos rating
     maxGuests: number;     // <-- Agregamos maxGuests
@@ -48,22 +48,22 @@ function DetailContent() {
         const end = new Date(endDate);
         const diffTime = end.getTime() - start.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
+
         if (diffDays <= 0) {
             return showAlert('Error', 'La fecha de salida debe ser posterior a la fecha de entrada', 'error');
         }
-        
+
         const totalPrice = property.pricePerNight * diffDays;
 
         try {
             await apiFetch('/reservations', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ 
-                    propertyId: id, 
-                    startDate, 
-                    endDate, 
-                    totalPrice 
+                body: JSON.stringify({
+                    propertyId: id,
+                    startDate,
+                    endDate,
+                    totalPrice
                 }),
             });
             showAlert('¡Éxito!', 'Reserva realizada correctamente', 'success');
@@ -76,24 +76,49 @@ function DetailContent() {
     if (!id) return <div className={styles.container}><p>ID de propiedad no especificado.</p></div>;
     if (!property) return <div className={styles.container}><p>Cargando detalles...</p></div>;
 
+    async function pay() {
+        try {
+            const respuesta = await fetch("/api/checkout", {
+                method: "POST",
+            });
+
+            if (!respuesta.ok) {
+                const errorData = await respuesta.json().catch(() => ({}));
+                throw new Error(errorData.error || `Error ${respuesta.status}`);
+            }
+
+            const { url } = await respuesta.json();
+            // Verificar que url exista antes de redirigir
+            if (!url) {
+                throw new Error('No se pudo generar la sesión de pago');
+            }
+
+            window.location.href = url; // Redirige a Stripe Checkout
+
+        } catch (error: any) {
+            showAlert('Error de pago', error.message || 'No se pudo generar la sesión de pago', 'error');
+        }
+
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.grid}>
                 <div>
                     {/* GALERÍA DE IMÁGENES */}
                     <div className={styles.gallery}>
-                        <img 
-                            src={getImageUrl(property.images?.[activeImg])} 
-                            alt={property.title} 
-                            className={styles.mainImage} 
+                        <img
+                            src={getImageUrl(property.images?.[activeImg])}
+                            alt={property.title}
+                            className={styles.mainImage}
                         />
                         {property.images && property.images.length > 1 && (
                             <div className={styles.thumbnails}>
                                 {property.images.map((img, index) => (
-                                    <img 
+                                    <img
                                         key={index}
                                         src={getImageUrl(img)}
-                                        alt={`Imagen ${index+1}`}
+                                        alt={`Imagen ${index + 1}`}
                                         className={`${styles.thumb} ${index === activeImg ? styles.activeThumb : ''}`}
                                         onClick={() => setActiveImg(index)}
                                     />
@@ -103,7 +128,7 @@ function DetailContent() {
                     </div>
 
                     <h1 className={styles.title}>{property.title}</h1>
-                    
+
                     {/* INFORMACIÓN EXTRA (Rating, Ubicación, Huéspedes) */}
                     <div className={styles.metaInfo}>
                         <p className={styles.rating}>⭐ {property.rating} / 5</p>
@@ -125,6 +150,7 @@ function DetailContent() {
                             <input type="date" required value={endDate} onChange={(e) => setEndDate(e.target.value)} className={styles.input} />
                         </div>
                         <button type="submit" className={styles.submitBtn}>Confirmar Reserva</button>
+                        <button type="button" onClick={pay} className={styles.submitBtn}>Pagar con Stripe</button>
                     </form>
                 </div>
             </div>
