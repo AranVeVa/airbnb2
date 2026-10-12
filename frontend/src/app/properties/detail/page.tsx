@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { showAlert } from '@/lib/alerts';
-import { getImageUrl } from '@/lib/image'; // <-- IMPORTAMOS EL HELPER
+import { getImageUrl } from '@/lib/image';
 import styles from './propertyDetail.module.css';
 
 interface Property {
@@ -13,10 +13,10 @@ interface Property {
     description: string;
     pricePerNight: number;
     images: string[];
-    rating: number;        // <-- Agregamos rating
-    maxGuests: number;     // <-- Agregamos maxGuests
-    location: string;      // <-- Agregamos location
-    category: string;      // <-- Agregamos category
+    rating: number;
+    maxGuests: number;
+    location: string;
+    category: string;
 }
 
 function DetailContent() {
@@ -25,7 +25,7 @@ function DetailContent() {
     const [property, setProperty] = useState<Property | null>(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [activeImg, setActiveImg] = useState(0); // <-- Estado para la galería
+    const [activeImg, setActiveImg] = useState(0);
     const { token } = useAuth();
     const router = useRouter();
 
@@ -34,7 +34,7 @@ function DetailContent() {
         apiFetch<Property>(`/properties/${id}`)
             .then(data => {
                 setProperty(data);
-                setActiveImg(0); // Reiniciar imagen al cargar
+                setActiveImg(0);
             })
             .catch(() => showAlert('Error', 'No se pudo cargar la propiedad', 'error'));
     }, [id]);
@@ -73,9 +73,6 @@ function DetailContent() {
         }
     };
 
-    if (!id) return <div className={styles.container}><p>ID de propiedad no especificado.</p></div>;
-    if (!property) return <div className={styles.container}><p>Cargando detalles...</p></div>;
-
     async function pay() {
         try {
             const respuesta = await fetch("/api/checkout", {
@@ -88,18 +85,45 @@ function DetailContent() {
             }
 
             const { url } = await respuesta.json();
-            // Verificar que url exista antes de redirigir
             if (!url) {
                 throw new Error('No se pudo generar la sesión de pago');
             }
 
             window.location.href = url; // Redirige a Stripe Checkout
-
         } catch (error: any) {
             showAlert('Error de pago', error.message || 'No se pudo generar la sesión de pago', 'error');
         }
-
     }
+
+    async function payWithMercadoPago() {
+        try {
+            const respuesta = await fetch("/api/mercadopago", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: property?.title || "Reserva de Alojamiento",
+                    price: property?.pricePerNight || 100
+                })
+            });
+
+            if (!respuesta.ok) {
+                const errorData = await respuesta.json().catch(() => ({}));
+                throw new Error(errorData.error || `Error ${respuesta.status}`);
+            }
+
+            const { url } = await respuesta.json();
+            if (!url) {
+                throw new Error('No se pudo generar la preferencia de Mercado Pago');
+            }
+
+            window.location.href = url; // Redirige a Mercado Pago
+        } catch (error: any) {
+            showAlert('Error de pago', error.message || 'No se pudo iniciar Mercado Pago', 'error');
+        }
+    }
+
+    if (!id) return <div className={styles.container}><p>ID de propiedad no especificado.</p></div>;
+    if (!property) return <div className={styles.container}><p>Cargando detalles...</p></div>;
 
     return (
         <div className={styles.container}>
@@ -129,7 +153,7 @@ function DetailContent() {
 
                     <h1 className={styles.title}>{property.title}</h1>
 
-                    {/* INFORMACIÓN EXTRA (Rating, Ubicación, Huéspedes) */}
+                    {/* INFORMACIÓN EXTRA */}
                     <div className={styles.metaInfo}>
                         <p className={styles.rating}>⭐ {property.rating} / 5</p>
                         <p className={styles.metaText}>{property.category} · {property.location} · Hasta {property.maxGuests} huéspedes</p>
@@ -138,6 +162,7 @@ function DetailContent() {
                     <p className={styles.price}>${property.pricePerNight} / noche</p>
                     <p className={styles.description}>{property.description}</p>
                 </div>
+
                 <div className={styles.bookingCard}>
                     <h2 className={styles.cardTitle}>Reservar este alojamiento</h2>
                     <form onSubmit={handleBooking} className={styles.form}>
@@ -149,8 +174,20 @@ function DetailContent() {
                             <label className={styles.label}>Fecha de Salida</label>
                             <input type="date" required value={endDate} onChange={(e) => setEndDate(e.target.value)} className={styles.input} />
                         </div>
-                        <button type="submit" className={styles.submitBtn}>Confirmar Reserva</button>
-                        <button type="button" onClick={pay} className={styles.submitBtn}>Pagar con Stripe</button>
+
+                        <button type="submit" className={styles.submitBtn}>
+                            Confirmar Reserva
+                        </button>
+
+                        {/* CONTENEDOR CON LOS DOS BOTONES DE PAGO AL LADO */}
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                            <button type="button" onClick={pay} className={styles.submitBtn} style={{ flex: 1, backgroundColor: '#635bff' }}>
+                                Pagar con Stripe
+                            </button>
+                            <button type="button" onClick={payWithMercadoPago} className={styles.submitBtn} style={{ flex: 1, backgroundColor: '#009ee3' }}>
+                                Mercado Pago
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
