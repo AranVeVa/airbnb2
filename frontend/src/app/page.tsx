@@ -32,7 +32,7 @@ interface Property {
 function HomeContent() {
   const searchParams = useSearchParams();
   const location = searchParams.get('location') || '';
-  const { showFilters, setShowFilters } = useFilters();
+  const { showFilters } = useFilters();
 
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);

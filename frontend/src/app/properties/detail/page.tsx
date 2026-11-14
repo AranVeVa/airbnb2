@@ -54,7 +54,7 @@ function DetailContent() {
             }]
         });
         console.log('Evento view_item enviado para:', property.title);
-    }, [property?.id]);
+    }, [property]);
 
     const handleBooking = async (e: React.FormEvent) => {
         e.preventDefault();

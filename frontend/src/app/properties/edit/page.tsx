@@ -46,7 +46,7 @@ function EditPropertyContent() {
                 setImages(data.images.length > 0 ? data.images : ['']);
                 setLoading(false);
             })
-            .catch(err => {
+            .catch(() => {
                 showAlert('Error', 'No se pudo cargar la propiedad', 'error');
                 setLoading(false);
             });
