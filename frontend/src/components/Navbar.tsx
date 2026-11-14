@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { sendGAEvent } from '@next/third-parties/google';
 import { useAuth } from '@/context/AuthContext';
 import { useFilters } from '@/context/FilterContext';
 import styles from './Navbar.module.css';
@@ -16,8 +17,13 @@ export default function Navbar() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        if (searchTerm.trim() === '') return;
-        router.push(`/?location=${encodeURIComponent(searchTerm.trim())}`);
+        const trimmed = searchTerm.trim();
+        if (trimmed === '') return;
+        sendGAEvent('event', 'search', {
+            search_term: trimmed
+        });
+        console.log('Evento search enviado:', trimmed);
+        router.push(`/?location=${encodeURIComponent(trimmed)}`);
     };
 
     const handleShowFilters = () => {

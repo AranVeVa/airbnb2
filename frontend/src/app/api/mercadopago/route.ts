@@ -30,16 +30,16 @@ export async function POST(request: Request) {
                         unit_price: Number(price),
                     },
                 ],
-                backUrls: {
+                back_urls: {
                     success: `${baseUrl}/pago-exitoso`,
                     failure: `${baseUrl}/pago-cancelado`,
                     pending: `${baseUrl}/pago-cancelado`,
                 },
-                autoReturn: "approved",
+                auto_return: "approved",
             },
         });
 
-        return NextResponse.json({ url: respuesta.init_point });s
+        return NextResponse.json({ url: respuesta.init_point });
     } catch (error: any) {
         console.error("Error Mercado Pago API:", error);
         return NextResponse.json(

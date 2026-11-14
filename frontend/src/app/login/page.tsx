@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { sendGAEvent } from '@next/third-parties/google';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/lib/api';
 import { showAlert } from '@/lib/alerts';
@@ -21,6 +22,8 @@ export default function LoginPage() {
                 body: JSON.stringify({ email, password }),
             });
             login(res.token, res.user.role);
+            sendGAEvent('event', 'login', { method: 'credentials' });
+            console.log('Evento login enviado');
             showAlert('¡Bienvenido!', 'Sesión iniciada correctamente', 'success');
             router.push('/');
         } catch (error: any) {

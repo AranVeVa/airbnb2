@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { sendGAEvent } from '@next/third-parties/google';
 import { apiFetch } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { showAlert } from '@/lib/alerts';
@@ -39,6 +40,22 @@ function DetailContent() {
             .catch(() => showAlert('Error', 'No se pudo cargar la propiedad', 'error'));
     }, [id]);
 
+    // Registrar consulta de detalles (view_item)
+    useEffect(() => {
+        if (!property) return;
+        sendGAEvent('event', 'view_item', {
+            currency: 'MXN',
+            items: [{
+                item_id: String(property.id),
+                item_name: property.title,
+                item_category: property.category || 'Alojamiento',
+                price: property.pricePerNight,
+                quantity: 1
+            }]
+        });
+        console.log('Evento view_item enviado para:', property.title);
+    }, [property?.id]);
+
     const handleBooking = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!token) return showAlert('Atención', 'Debes iniciar sesión para reservar', 'warning');
@@ -54,6 +71,20 @@ function DetailContent() {
         }
 
         const totalPrice = property.pricePerNight * diffDays;
+
+        // Registrar inicio de reservación (begin_checkout)
+        sendGAEvent('event', 'begin_checkout', {
+            currency: 'MXN',
+            value: totalPrice,
+            items: [{
+                item_id: String(property.id),
+                item_name: property.title,
+                item_category: property.category || 'Alojamiento',
+                price: totalPrice,
+                quantity: 1
+            }]
+        });
+        console.log('Evento begin_checkout enviado para:', property.title, 'Total:', totalPrice);
 
         try {
             await apiFetch('/reservations', {
@@ -74,6 +105,20 @@ function DetailContent() {
     };
 
     async function pay() {
+        if (property) {
+            sendGAEvent('event', 'begin_checkout', {
+                currency: 'MXN',
+                value: property.pricePerNight,
+                items: [{
+                    item_id: String(property.id),
+                    item_name: property.title,
+                    item_category: property.category || 'Alojamiento',
+                    price: property.pricePerNight,
+                    quantity: 1
+                }]
+            });
+            console.log('Evento begin_checkout (Stripe) enviado');
+        }
         try {
             const respuesta = await fetch("/api/checkout", {
                 method: "POST",
@@ -96,6 +141,20 @@ function DetailContent() {
     }
 
     async function payWithMercadoPago() {
+        if (property) {
+            sendGAEvent('event', 'begin_checkout', {
+                currency: 'MXN',
+                value: property.pricePerNight,
+                items: [{
+                    item_id: String(property.id),
+                    item_name: property.title,
+                    item_category: property.category || 'Alojamiento',
+                    price: property.pricePerNight,
+                    quantity: 1
+                }]
+            });
+            console.log('Evento begin_checkout (MercadoPago) enviado');
+        }
         try {
             const respuesta = await fetch("/api/mercadopago", {
                 method: "POST",

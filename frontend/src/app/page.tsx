@@ -2,6 +2,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { sendGAEvent } from '@next/third-parties/google';
 import { apiFetch } from '@/lib/api';
 import { getImageUrl } from '@/lib/image';
 import { useFilters } from '@/context/FilterContext';
@@ -172,7 +173,24 @@ function HomeContent() {
           <p className={styles.noResults}>No se encontraron propiedades con estos filtros.</p>
         ) : (
           properties.map((item) => (
-            <Link href={`/properties/detail?id=${item.id}`} key={item.id} className={styles.card}>
+            <Link
+              href={`/properties/detail?id=${item.id}`}
+              key={item.id}
+              className={styles.card}
+              onClick={() => {
+                sendGAEvent('event', 'select_item', {
+                  item_list_name: location ? 'Resultados de búsqueda' : 'Alojamientos disponibles',
+                  items: [{
+                    item_id: String(item.id),
+                    item_name: item.title,
+                    item_category: item.category || 'Alojamiento',
+                    price: item.pricePerNight,
+                    quantity: 1
+                  }]
+                });
+                console.log('Evento select_item enviado:', item.title);
+              }}
+            >
               <img
                 src={getImageUrl(item.images?.[0])}
                 alt={item.title}

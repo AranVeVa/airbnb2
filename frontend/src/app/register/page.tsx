@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { sendGAEvent } from '@next/third-parties/google';
 import { apiFetch } from '@/lib/api';
 import { showAlert } from '@/lib/alerts';
 import styles from '../auth.module.css';
@@ -19,6 +20,8 @@ export default function RegisterPage() {
                 method: 'POST',
                 body: JSON.stringify({ name, email, password }),
             });
+            sendGAEvent('event', 'sign_up', { method: 'credentials' });
+            console.log('Evento sign_up enviado');
             showAlert('¡Cuenta creada!', 'Ya puedes iniciar sesión', 'success');
             router.push('/login');
         } catch (error: any) {
