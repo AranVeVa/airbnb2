@@ -20,7 +20,17 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Error status: ${response.status}`);
+        const errorMessage = errorData.error || `Error status: ${response.status}`;
+
+        // Si el token es inválido o expiró, limpiar sesión local para desbloquear al usuario
+        if (response.status === 401 || response.status === 403) {
+            if (typeof window !== 'undefined' && (errorMessage.toLowerCase().includes('token') || errorMessage.toLowerCase().includes('expirado') || errorMessage.toLowerCase().includes('acceso denegado'))) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+            }
+        }
+
+        throw new Error(errorMessage);
     }
 
     return response.json() as Promise<T>;
